@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['D:\\gits\\python_os\\testService'],
+             pathex=['D:\\gits\\python_os\\ServiceWrapper'],
              binaries=[],
              datas=[],
              hiddenimports=[],

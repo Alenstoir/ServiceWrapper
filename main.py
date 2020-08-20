@@ -18,15 +18,11 @@ class ServiceWrapper(win32serviceutil.ServiceFramework):
         self.stream_server = None
         self.pipe = open(os.path.dirname(sys.executable) + '\\Service.log', 'a')
         try:
-            self.stream_server = subprocess.Popen(["echo", "%CD%"], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=os.path.dirname(sys.executable))
-            self.pipe.write(str(self.stream_server.communicate()) + '\n')
-            self.pipe.flush()
-            self.stream_server.kill()
             self.stream_server = subprocess.Popen(["python", "main.py"], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=os.path.dirname(sys.executable))
             try:
-                self.pipe.write(str(self.stream_server.stdout.readline()))
+                self.pipe.write(str(self.stream_server.stdout.readline().decode().encode("UTF-8")) + '\n')
             except TimeoutError as e:
-                self.pipe.write('timeout')
+                self.pipe.write('timeout\n')
             self.pipe.flush()
         except Exception as e:
             self.pipe.write("Exception happened: \n")
@@ -51,13 +47,12 @@ class ServiceWrapper(win32serviceutil.ServiceFramework):
         rc = None
         while rc != win32event.WAIT_OBJECT_0:
             try:
-                self.pipe.write(str(self.stream_server.stdout.readline()) + '\n')
+                self.pipe.write(str(self.stream_server.stdout.readline().strip()) + '\n')
             except TimeoutError as e:
                 self.pipe.write("Exception happened: \n")
                 self.pipe.write(str(e) + "\n")
             self.pipe.flush()
 
-            # self.pipe.write(str(self.stream_server.stdout.read()))
             rc = win32event.WaitForSingleObject(self.hWaitStop, 500)  # service commands acquire
 
 
